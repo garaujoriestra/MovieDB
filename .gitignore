@@ -2,3 +2,8 @@
 node_modules/
 # bower modules
 bower_components/
+#dist
+dist/
+
+db/
+server.py

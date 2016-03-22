@@ -1,6 +1,6 @@
 //En el módulo moviedb, defino el controlador.
 angular.module("moviedb").controller("MenuController",
-	["$scope",function($scope){
+	["$scope","$location",function($scope,$location){
 		//Scope init
 
 		$scope.model = {
@@ -8,10 +8,6 @@ angular.module("moviedb").controller("MenuController",
 		};
 
 		//Scope methods
-
-		$scope.setSelectedItem = function(item){
-			$scope.model.selectedItem = item;
-		}
 		$scope.getClassForItem = function(item){
 			if($scope.model.selectedItem == item){
 				return "active";
@@ -20,11 +16,9 @@ angular.module("moviedb").controller("MenuController",
 			}
 		}
 
-		//Scope Watchers
-
-		$scope.$watch("model.selectedItem", function(newValue, oldValue){
-			$scope.$emit("OnMenuChange", newValue);
-			
+		//Scope event listeners
+		$scope.$on("$locationChangeSuccess", function(event,currentRoute){
+			$scope.model.selectedItem = $location.path();
 		});
 	}]
 );

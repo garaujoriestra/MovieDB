@@ -31610,21 +31610,31 @@ angular.module("moviedb",['ngRoute']).config(
 	}]
 );
 ;angular.module("moviedb").controller("AppController",
-	["$scope", function($scope){
+	["$scope","$location", function($scope,$location){
+		var controller = this;
+		//Controller properties
+		controller.titles = {
+			"/movies": "Movies List",
+			"/series": "Series List",
+			"/people": "People List"
+		};
+
 		//Model init
 		$scope.model = {
 			title: ""
 		}
 
 		//Scope EventListeners
-		$scope.$on("OnMenuChange", function(event,data){
-			$scope.model.title = data;
+		$scope.$on("$locationChangeSuccess", function(event,currentRoute){
+			$scope.model.title = controller.titles[$location.path()] || "404 Not Found";
 		});
+
+
 	}]
 );
 ;//En el módulo moviedb, defino el controlador.
 angular.module("moviedb").controller("MenuController",
-	["$scope",function($scope){
+	["$scope","$location",function($scope,$location){
 		//Scope init
 
 		$scope.model = {
@@ -31632,10 +31642,6 @@ angular.module("moviedb").controller("MenuController",
 		};
 
 		//Scope methods
-
-		$scope.setSelectedItem = function(item){
-			$scope.model.selectedItem = item;
-		}
 		$scope.getClassForItem = function(item){
 			if($scope.model.selectedItem == item){
 				return "active";
@@ -31644,18 +31650,48 @@ angular.module("moviedb").controller("MenuController",
 			}
 		}
 
-		//Scope Watchers
-
-		$scope.$watch("model.selectedItem", function(newValue, oldValue){
-			$scope.$emit("OnMenuChange", newValue);
-			
+		//Scope event listeners
+		$scope.$on("$locationChangeSuccess", function(event,currentRoute){
+			$scope.model.selectedItem = $location.path();
 		});
 	}]
 );
 ;angular.module("moviedb").controller("MoviesListController",
-	["$scope", function($scope){
-		$scope.name = "Joseba";
-		$scope.$watch("name", function(){console.log('')})
+	["$scope","$log","MovieService", function($scope,$log,MovieService){
+		//Scope Init
+		$scope.uiState = "loading";
+
+		$scope.model = [];
+
+        //Controller start
+        	
+        MovieService.getMovies().then(
+        	//promesa resuelta
+        	function(response){
+        		$log.log("Success:",response.data);
+        		$scope.model = response.data;
+        		if(response.length == 0){
+	        		$scope.uiState = "blank";
+	        	}else{
+	        		$scope.uiState = "ideal";
+	        	}
+
+        	},
+        	//promesa rechazada
+        	function(response){
+        		$log.log("error:",response);
+        		$scope.uiState = "error";
+        	}
+        );
 	}]
 
 );
+;angular.module("moviedb").service("MovieService",
+ 	["$http",function($http){
+
+ 		this.getMovies = function(){
+ 			return $http.get("/api/movies");
+        
+ 		};
+ 	}]
+ );
